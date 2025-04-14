@@ -1,13 +1,13 @@
-package com.aispringmind.ai_spring_mind;
+package com.brieflyai.BrieflyAI;
 
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 
 @SpringBootApplication
-public class AiSpringMindApplication {
+public class BrieflyAiApplication {
 
 	public static void main(String[] args) {
-		SpringApplication.run(AiSpringMindApplication.class, args);
+		SpringApplication.run(BrieflyAiApplication.class, args);
 	}
 
 }

@@ -1,10 +1,10 @@
-package com.aispringmind.ai_spring_mind;
+package com.brieflyai.BrieflyAI;
 
 import org.junit.jupiter.api.Test;
 import org.springframework.boot.test.context.SpringBootTest;
 
 @SpringBootTest
-class AiSpringMindApplicationTests {
+class BrieflyAiApplicationTests {
 
 	@Test
 	void contextLoads() {

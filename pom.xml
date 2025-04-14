@@ -8,10 +8,10 @@
 		<version>3.4.4</version>
 		<relativePath/> <!-- lookup parent from repository -->
 	</parent>
-	<groupId>com.aispringmind</groupId>
-	<artifactId>ai-spring-mind</artifactId>
+	<groupId>com.brieflyai</groupId>
+	<artifactId>BrieflyAI</artifactId>
 	<version>0.0.1-SNAPSHOT</version>
-	<name>ai-spring-mind</name>
+	<name>BrieflyAI</name>
 	<description>Java Spring AI research assistant application</description>
 	<url/>
 	<licenses>
