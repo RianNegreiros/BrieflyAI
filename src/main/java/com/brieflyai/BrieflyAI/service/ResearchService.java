@@ -1,5 +1,6 @@
 package com.brieflyai.BrieflyAI.service;
 
+import com.brieflyai.BrieflyAI.exception.ResearchServiceException;
 import com.brieflyai.BrieflyAI.model.dto.GeminiResponse;
 import com.brieflyai.BrieflyAI.model.enums.ResearchOperation;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -60,7 +61,7 @@ public class ResearchService {
             
             return "No content found";
         } catch (Exception e) {
-            return "Error Parsing: " + e.getMessage();
+            throw new ResearchServiceException("Failed to parse response from Gemini API", e);
         }
     }
 
@@ -68,8 +69,8 @@ public class ResearchService {
     try {
         ResearchOperation operation = ResearchOperation.fromString(researchRequest.getOperation());
         return operation.getPromptTemplate() + "\n\n" + researchRequest.getContent();
-    } catch (Exception e) {
-        return "Failed to build prompt" + e.getMessage();
+    } catch (IllegalArgumentException e) {
+        throw new ResearchServiceException("Invalid operation: " + researchRequest.getOperation());
     }
   }
 }
