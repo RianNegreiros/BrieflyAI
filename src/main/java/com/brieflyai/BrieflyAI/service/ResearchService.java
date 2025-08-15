@@ -1,6 +1,7 @@
 package com.brieflyai.BrieflyAI.service;
 
 import com.brieflyai.BrieflyAI.model.dto.GeminiResponse;
+import com.brieflyai.BrieflyAI.model.enums.ResearchOperation;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
@@ -64,25 +65,11 @@ public class ResearchService {
     }
 
     private String buildPrompt(ResearchRequest researchRequest) {
-    StringBuilder prompt = new StringBuilder();
-
-    switch (researchRequest.getOperation()) {
-      case "summarize":
-        prompt.append("You are an expert summarizer. Summarize the following article into a clear, concise overview that captures the main points and key details without personal opinion.");
-        break;
-      case "suggest":
-        prompt.append("""
-                Based solely on the article below, suggest 3 diverse resources or actions for further exploration. Include: \s
-                1. One reputable source for deeper understanding (include URL if possible). \s
-                2. One thought-provoking question challenging the article's premise. \s
-                3. One practical next step (e.g., tool, activity, or related concept).\s
-                 \
-                Avoid rewriting the entire article. Keep suggestions actionable.""");
-        break;
-      default:
-        throw new IllegalArgumentException("Unknown operation");
+    try {
+        ResearchOperation operation = ResearchOperation.fromString(researchRequest.getOperation());
+        return operation.getPromptTemplate() + "\n\n" + researchRequest.getContent();
+    } catch (Exception e) {
+        return "Failed to build prompt" + e.getMessage();
     }
-    prompt.append(researchRequest.getContent());
-    return prompt.toString();
   }
 }
