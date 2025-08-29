@@ -13,10 +13,10 @@
     "default_title": "BrieflyAI"
   },
   "side_panel": {
-    "default_path": "sidepanel.html"
+    "default_path": "src/sidepanel.html"
   },
   "background": {
-    "service_worker": "background.js"
+    "service_worker": "src/background.js"
   },
   "host_permissions": [
     "http://localhost:8080/*",
