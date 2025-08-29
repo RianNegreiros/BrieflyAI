@@ -1,0 +1,37 @@
+{
+	"info": {
+		"_postman_id": "c3f68953-992d-4ff2-a7f0-7505ffc264a7",
+		"name": "BrieflyAI",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+		"_exporter_id": "15917186"
+	},
+	"item": [
+		{
+			"name": "Operation: suggest",
+			"request": {
+				"method": "POST",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "{\r\n    \"content\": \"Spring is a pragmatic, production-ready backbone for deploying AI systems: treat models as first-class services and apply Spring’s inversion-of-control, layered architecture, and ecosystem (Web, Data, Security, Cloud, Integration, Reactor) to manage data ingestion, feature transformation, model inference, lifecycle, and observability. Architecturally, split responsibilities: (1) feature engineering and validation in a stateless preprocessing service; (2) model inference as either an in-process engine (ONNX Runtime, TensorFlow/Java, DL4J) or a remote model server (TensorFlow Serving, TorchServe, Triton, Seldon/KFServing/KServe); (3) orchestration, caching, and serving API in Spring Boot; (4) pipelines and training jobs in separate ML infra (Kubeflow/CI). Use hexagonal/ports-and-adapters: controllers expose stable APIs, adapters call model runtimes, domain services hold business rules, and repositories persist metadata/metrics. Integration patterns and primitives: expose inference endpoints with Spring WebFlux for high-concurrency, non-blocking I/O when calling remote model servers (WebClient + Reactor). For CPU/GPU-bound local inference, keep calls blocking but isolate them on a bounded thread pool (TaskExecutor) to avoid starving Netty event loops. Implement request batching (adaptive or fixed windows) at the service layer to amortize model call overhead—use a Flux buffer + flatMap or a scheduled batching actor. Protect downstream model services using Resilience4j (circuit breakers, bulkheads, retry with backoff). Use caching (Spring Cache, Redis) for idempotent/expensive inferences and implement TTL and versioned cache keys that include model id and input schema hash. Data & feature management: separate raw ingestion (Spring Integration/Kafka listeners) from deterministic feature transforms (Spring Batch jobs or stream-processing using Kafka Streams). Persist features/labels and example metadata in a feature store (or a table via Spring Data JPA/Reactive Repositories); tag feature schema versions and validate with schemas (Avro/Protobuf/JSON Schema) at the edge. Log inputs, outputs, latencies, and prediction metadata to an append-only store for monitoring and retraining triggers (Elasticsearch, BigQuery, S3). Model lifecycle and CI/CD: version models with immutable artifacts; serve model metadata via a model registry; automate validation (smoke tests, canary, shadow) in CI. In Spring, implement endpoints for model swap: a ModelRouter bean that routes inference calls to the active model adapter based on model-version metadata; implement graceful warm-up and health checks. For canary/A-B: route a percentage of traffic via a router that consults a configurable strategy (feature flags, header). Use Kubernetes + Helm and containerize Spring Boot; schedule GPU-accelerated pods for heavy inference and use node selectors/tolerations. For enterprise-grade model serving, leverage Seldon/KServe to abstract model types while using Spring as the business-facing gateway. Observability & safety: instrument with Micrometer + Prometheus + Grafana for latency percentiles (p50/p95/p99), concurrency, error rates, and model-specific counters (drift signals, input distribution metrics). Integrate OpenTelemetry tracing for request correlation across preprocessing → model → postprocessing. Implement explainability hooks: return saliency/SHAP-like metadata when feasible, but protect PII and limit exposure. Add quota/rate-limiting and per-tenant isolation for multitenancy. Security & compliance: authenticate/authorize APIs with Spring Security (OAuth2/JWT), encrypt model artifacts at rest, and sign model artifacts for provenance. Validate inputs aggressively (size, schema) to avoid adversarial payloads and use content-type and length checks on gateway layers.\",\r\n    \"operation\": \"suggest\"\r\n}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "{{baseUrl}}/api/process",
+					"host": [
+						"{{baseUrl}}"
+					],
+					"path": [
+						"api",
+						"process"
+					]
+				}
+			},
+			"response": []
+		}
+	]
+}
