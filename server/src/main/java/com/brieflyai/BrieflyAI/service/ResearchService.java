@@ -25,11 +25,9 @@ public class ResearchService {
     @Value("${gemini.api.model}")
     private String geminiModel;
 
-    private final Client client;
     private final GenerateContentConfig config;
 
-    public ResearchService(Client client, GenerateContentConfig config) {
-        this.client = client;
+    public ResearchService(GenerateContentConfig config) {
         this.config = config;
     }
 
@@ -42,6 +40,8 @@ public class ResearchService {
 
             validateRequest(researchRequest);
             String prompt = buildPrompt(researchRequest);
+            
+            Client client = Client.builder().apiKey(researchRequest.getApiKey()).build();
             GenerateContentResponse response = client.models.generateContent(geminiModel, prompt, config);
 
             Duration processingTime = Duration.between(startTime, Instant.now());
@@ -78,6 +78,10 @@ public class ResearchService {
 
         if (!StringUtils.hasText(researchRequest.getContent())) {
             throw new IllegalArgumentException("Content is required");
+        }
+
+        if (!StringUtils.hasText(researchRequest.getApiKey())) {
+            throw new IllegalArgumentException("API key is required");
         }
 
         logger.debug("Request validation passed");

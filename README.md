@@ -124,7 +124,8 @@ Content-Type: application/json
 
 {
   "content": "Your text to summarize here",
-  "operation": "summarize"
+  "operation": "summarize",
+  "apiKey": "your-gemini-api-key-here"
 }
 ```
 

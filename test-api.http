@@ -8,7 +8,8 @@ Content-Type: application/json
 
 {
   "content": "{{longArticle}}",
-  "operation": "summarize"
+  "operation": "summarize",
+  "apiKey": "your-gemini-api-key-here"
 }
 
 ### Test BrieflyAI Sugestion Operation
@@ -17,5 +18,6 @@ Content-Type: application/json
 
 {
   "content": "{{longArticle}}",
-  "operation": "suggest"
+  "operation": "suggest",
+  "apiKey": "your-gemini-api-key-here"
 }

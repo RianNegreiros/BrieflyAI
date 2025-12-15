@@ -1,32 +1,33 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="en">
+  <head>
+    <title>BrieflyAI</title>
+    <link rel="stylesheet" href="sidepanel.css" />
+  </head>
 
-<head>
-  <title>BrieflyAI</title>
-  <link rel="stylesheet" href="sidepanel.css">
-</head>
+  <body>
+    <div class="container">
+      <div class="header">
+        <h2>BrieflyAI</h2>
+      </div>
 
-<body>
-  <div class="container">
-    <div class="header">
-      <h2>BrieflyAI</h2>
+      <div class="api-key">
+        <h3>API Key</h3>
+        <input
+          type="password"
+          id="apiKey"
+          placeholder="Enter your Gemini API key"
+        />
+        <button id="saveKeyBtn">Save Key</button>
+      </div>
+
+      <div class="actions">
+        <button id="summarizeBtn">Summarize</button>
+      </div>
+
+      <div id="results"></div>
     </div>
 
-    <div class="actions">
-      <button id="summarizeBtn">Summarize</button>
-    </div>
-
-    <div class="notes">
-      <h3>Research Notes</h3>
-      <textarea id="notes" placeholder="Place your notes here"></textarea>
-      <button id="saveNotesBtn">Save Notes</button>
-    </div>
-
-    <div id="results"></div>
-
-  </div>
-
-  <script src="sidepanel.js"></script>
-</body>
-
+    <script src="sidepanel.js"></script>
+  </body>
 </html>
