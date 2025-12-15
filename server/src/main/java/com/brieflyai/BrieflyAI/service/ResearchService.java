@@ -6,6 +6,7 @@ import com.google.genai.Client;
 import com.google.genai.types.GenerateContentConfig;
 import com.google.genai.types.GenerateContentResponse;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.cache.annotation.Cacheable;
 import org.springframework.stereotype.Service;
 import org.springframework.util.StringUtils;
 
@@ -31,6 +32,7 @@ public class ResearchService {
         this.config = config;
     }
 
+    @Cacheable(value = "research", key = "#researchRequest.operation + ':' + #researchRequest.content.hashCode()")
     public String processContent(ResearchRequest researchRequest) {
         try {
             logger.info("Starting request processing: operation={}, contentLength={}", researchRequest.getOperation(),
@@ -40,7 +42,7 @@ public class ResearchService {
 
             validateRequest(researchRequest);
             String prompt = buildPrompt(researchRequest);
-            
+
             Client client = Client.builder().apiKey(researchRequest.getApiKey()).build();
             GenerateContentResponse response = client.models.generateContent(geminiModel, prompt, config);
 
