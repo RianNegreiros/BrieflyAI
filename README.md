@@ -11,16 +11,15 @@ BrieflyAI is a Chrome Extension with a Spring Boot backend that summarizes selec
 
 - Extension: Chrome Extension (Manifest V3), side panel UI
 - Server: Spring Boot (Java 21)
-- AI: Google Gemini `generateContent` endpoint
 
 ## Repository Layout
 
-- `apps/extension/`: Chrome extension source
+- `extension/`: Chrome extension source
   - `manifest.json`
   - `src/`
     - `sidepanel.html`, `sidepanel.js`, `sidepanel.css`
     - `background.js`
-- `apps/server/`: Spring Boot service exposing `/api/process`
+- `server/`: Spring Boot service exposing `/api/process`
 - `docs/`: Product design notes
 
 ## Prerequisites
@@ -34,7 +33,7 @@ BrieflyAI is a Chrome Extension with a Spring Boot backend that summarizes selec
 1. Set your Gemini API key as an environment variable:
    - Linux/macOS: `export GEMINI_KEY=your_key_here`
    - Windows (PowerShell): `$Env:GEMINI_KEY="your_key_here"`
-2. From `apps/server/`, run the service:
+2. From `server/`, run the service:
    - `./mvnw spring-boot:run`
 3. The API will be available at `http://localhost:8080/api/process`.
 
@@ -52,7 +51,7 @@ Request format:
 1. Start the server first (see above).
 2. In Chrome, navigate to `chrome://extensions`.
 3. Enable Developer Mode.
-4. Click "Load unpacked" and select the `apps/extension/` folder.
+4. Click "Load unpacked" and select the `extension/` folder.
 5. Pin the extension and open the side panel.
 
 Usage:
@@ -62,7 +61,7 @@ Usage:
 
 ## Configuration
 
-- Server reads `GEMINI_KEY` from the environment; see `apps/server/src/main/resources/application.properties`.
+- Server reads `GEMINI_KEY` from the environment; see `server/src/main/resources/application.properties`.
   - On VSCode, you can set it in the `.vscode/launch.json` file:
 
     ```json
@@ -83,9 +82,9 @@ Usage:
     }
     ```
 
-- The extension expects the server at `http://localhost:8080` (configured in `apps/extension/manifest.json` and `apps/extension/src/sidepanel.js`).
+- The extension expects the server at `http://localhost:8080` (configured in `extension/manifest.json` and `extension/src/sidepanel.js`).
 
-- Manifest file paths must match your directory structure. If your files live under `apps/extension/src/`, update `apps/extension/manifest.json` accordingly:
+- Manifest file paths must match your directory structure. If your files live under `extension/src/`, update `extension/manifest.json` accordingly:
   - `side_panel.default_path`: `src/sidepanel.html`
   - `background.service_worker`: `src/background.js`
 
@@ -94,29 +93,42 @@ Usage:
 - Selected text is sent from the extension to the local server, which forwards the prompt to the Gemini API.
 - Notes are stored locally in the browser via `chrome.storage.local` and are not sent to the server.
 
-## API & Postman
+## Testing
 
-- Endpoint: POST /api/process
-- Request:
-  - Headers: Content-Type: application/json
-  - Body:
+### Manual API Testing
 
-    ```json
-    { "content": "<selected text>", "operation": "summarize" }
-    ```
+To manually test the API endpoint, you can use `curl` or any HTTP client like Postman or Insomnia. Below are examples for testing the endpoint:
 
-- Response: Plain text summary
-
-Postman:
-
-- Import `docs/BrieflyAI.postman_collection.json`
-- Import `docs/BrieflyAI.postman_environment.json`
-- Select the “BrieflyAI Local” environment and send the request.
-
-Quick curl:
+#### Using cURL
 
 ```bash
-curl -s -X POST http://localhost:8080/api/process \
+# Test summarization
+curl -X POST http://localhost:8080/api/process \
   -H "Content-Type: application/json" \
-  -d '{"content":"Hello world","operation":"summarize"}'
+  -d '{"content": "Your text to summarize here", "operation": "summarize"}'
 ```
+
+#### Using the `.http` File
+
+You can use the provided `test-api.http` file in the root of the project to test the API. This file contains pre-configured HTTP requests that you can run directly in VS Code using the **REST Client** extension.
+
+1. Open the `test-api.http` file in VS Code.
+2. Install the **REST Client** extension if you haven't already.
+3. Click the **Send Request** link above the request to test the endpoint.
+
+Example content of `test-api.http`:
+
+```http
+POST http://localhost:8080/api/process
+Content-Type: application/json
+
+{
+  "content": "Your text to summarize here",
+  "operation": "summarize"
+}
+```
+
+#### Expected Responses
+
+- **Success**: Returns a plain text summary of the provided content.
+- **Error**: Returns an error message with details about the issue (e.g., invalid request format).
