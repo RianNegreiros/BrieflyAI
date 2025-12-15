@@ -42,7 +42,8 @@ Request format:
 ```json
 {
   "content": "<selected text>",
-  "operation": "summarize"
+  "operation": "summarize",
+  "apiKey": "<your-gemini-api-key-here>"
 }
 ```
 
@@ -60,27 +61,6 @@ Usage:
 - Write notes in the text area and click "Save Notes". Notes are stored in `chrome.storage.local` per browser profile.
 
 ## Configuration
-
-- Server reads `GEMINI_KEY` from the environment; see `server/src/main/resources/application.properties`.
-  - On VSCode, you can set it in the `.vscode/launch.json` file:
-
-    ```json
-    {
-      "version": "0.2.0",
-      "configurations": [
-        {
-          "type": "java",
-          "name": "BrieflyAiApplication",
-          "request": "launch",
-          "mainClass": "com.brieflyai.BrieflyAI.BrieflyAiApplication",
-          "projectName": "BrieflyAI",
-          "env": {
-            "GEMINI_KEY": "your-gemini-api-key-here"
-          }
-        }
-      ]
-    }
-    ```
 
 - The extension expects the server at `http://localhost:8080` (configured in `extension/manifest.json` and `extension/src/sidepanel.js`).
 
@@ -105,7 +85,7 @@ To manually test the API endpoint, you can use `curl` or any HTTP client like Po
 # Test summarization
 curl -X POST http://localhost:8080/api/process \
   -H "Content-Type: application/json" \
-  -d '{"content": "Your text to summarize here", "operation": "summarize"}'
+  -d '{"content": "Your text to summarize here", "operation": "summarize", "apiKey": "<your-gemini-api-key-here>"}'
 ```
 
 #### Using the `.http` File
