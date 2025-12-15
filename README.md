@@ -1,6 +1,6 @@
 # BrieflyAI
 
-BrieflyAI is a Chrome Extension with a Spring Boot backend that summarizes selected text on any webpage using the Gemini API, and lets you save personal notes locally per URL.
+BrieflyAI is a Chrome Extension with a Spring Boot backend that summarizes selected text on any webpage using the Google Gemini, and lets you save personal notes locally per URL.
 
 ## Features
 
@@ -9,8 +9,8 @@ BrieflyAI is a Chrome Extension with a Spring Boot backend that summarizes selec
 
 ## Architecture
 
-- Extension: Chrome Extension (Manifest V3), side panel UI, background service worker
-- Server: Spring Boot (Java 17), WebFlux client to call Gemini API
+- Extension: Chrome Extension (Manifest V3), side panel UI
+- Server: Spring Boot (Java 21)
 - AI: Google Gemini `generateContent` endpoint
 
 ## Repository Layout
@@ -25,7 +25,7 @@ BrieflyAI is a Chrome Extension with a Spring Boot backend that summarizes selec
 
 ## Prerequisites
 
-- Java 17 and Maven
+- Java 21 and Maven
 - Google Gemini API key
 - Chrome (or Chromium-based browser) supporting side panel extensions
 
@@ -63,7 +63,28 @@ Usage:
 ## Configuration
 
 - Server reads `GEMINI_KEY` from the environment; see `apps/server/src/main/resources/application.properties`.
+  - On VSCode, you can set it in the `.vscode/launch.json` file:
+
+    ```json
+    {
+      "version": "0.2.0",
+      "configurations": [
+        {
+          "type": "java",
+          "name": "BrieflyAiApplication",
+          "request": "launch",
+          "mainClass": "com.brieflyai.BrieflyAI.BrieflyAiApplication",
+          "projectName": "BrieflyAI",
+          "env": {
+            "GEMINI_KEY": "your-gemini-api-key-here"
+          }
+        }
+      ]
+    }
+    ```
+
 - The extension expects the server at `http://localhost:8080` (configured in `apps/extension/manifest.json` and `apps/extension/src/sidepanel.js`).
+
 - Manifest file paths must match your directory structure. If your files live under `apps/extension/src/`, update `apps/extension/manifest.json` accordingly:
   - `side_panel.default_path`: `src/sidepanel.html`
   - `background.service_worker`: `src/background.js`
