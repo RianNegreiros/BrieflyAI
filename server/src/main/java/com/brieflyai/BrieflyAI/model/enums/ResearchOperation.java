@@ -2,7 +2,7 @@ package com.brieflyai.BrieflyAI.model.enums;
 
 public enum ResearchOperation {
     SUMMARIZE("summarize",
-            "You are an expert summarizer. Summarize the following article into a clear, concise overview that captures the main points and key details without personal opinion."),
+            "You are an expert summarizer. Summarize the following article into a highly concise overview, focusing only on the main points and key details. Aim for a summary that is no more than 10% of the original content's length. Avoid personal opinion and ensure clarity."),
     SUGGEST("suggest",
             """
                     You are a research assistant helping users explore topics deeper. Based on the article below, provide exactly 3 suggestions in the following format:
