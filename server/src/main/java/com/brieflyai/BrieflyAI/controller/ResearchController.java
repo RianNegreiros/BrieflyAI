@@ -9,10 +9,10 @@ import org.springframework.web.bind.annotation.*;
 @RequestMapping("/api")
 @CrossOrigin(origins = "*")
 public class ResearchController {
-    
+
     private final ResearchService researchService;
 
-    public ResearchController(ResearchService researchService) { 
+    public ResearchController(ResearchService researchService) {
         this.researchService = researchService;
     }
 

@@ -1,19 +1,19 @@
-## BrieflyAI
+# BrieflyAI
 
 BrieflyAI is a Chrome Extension with a Spring Boot backend that summarizes selected text on any webpage using the Gemini API, and lets you save personal notes locally per URL.
 
-### Features
+## Features
 
 - Summarize selected text via the side panel
 - Store personal research notes locally (per URL)
 
-### Architecture
+## Architecture
 
 - Extension: Chrome Extension (Manifest V3), side panel UI, background service worker
 - Server: Spring Boot (Java 17), WebFlux client to call Gemini API
 - AI: Google Gemini `generateContent` endpoint
 
-### Repository Layout
+## Repository Layout
 
 - `apps/extension/`: Chrome extension source
   - `manifest.json`
@@ -23,13 +23,13 @@ BrieflyAI is a Chrome Extension with a Spring Boot backend that summarizes selec
 - `apps/server/`: Spring Boot service exposing `/api/process`
 - `docs/`: Product design notes
 
-### Prerequisites
+## Prerequisites
 
 - Java 17 and Maven
 - Google Gemini API key
 - Chrome (or Chromium-based browser) supporting side panel extensions
 
-### Server Setup (Spring Boot)
+## Server Setup (Spring Boot)
 
 1. Set your Gemini API key as an environment variable:
    - Linux/macOS: `export GEMINI_KEY=your_key_here`
@@ -47,7 +47,7 @@ Request format:
 }
 ```
 
-### Extension Setup (Development)
+## Extension Setup (Development)
 
 1. Start the server first (see above).
 2. In Chrome, navigate to `chrome://extensions`.
@@ -60,7 +60,7 @@ Usage:
 - Select text on any page, open the side panel, and click "Summarize".
 - Write notes in the text area and click "Save Notes". Notes are stored in `chrome.storage.local` per browser profile.
 
-### Configuration
+## Configuration
 
 - Server reads `GEMINI_KEY` from the environment; see `apps/server/src/main/resources/application.properties`.
 - The extension expects the server at `http://localhost:8080` (configured in `apps/extension/manifest.json` and `apps/extension/src/sidepanel.js`).
@@ -68,28 +68,32 @@ Usage:
   - `side_panel.default_path`: `src/sidepanel.html`
   - `background.service_worker`: `src/background.js`
 
-### Security & Privacy
+## Security & Privacy
 
 - Selected text is sent from the extension to the local server, which forwards the prompt to the Gemini API.
 - Notes are stored locally in the browser via `chrome.storage.local` and are not sent to the server.
 
-### API & Postman
+## API & Postman
 
 - Endpoint: POST /api/process
 - Request:
   - Headers: Content-Type: application/json
   - Body:
+
     ```json
     { "content": "<selected text>", "operation": "summarize" }
     ```
+
 - Response: Plain text summary
 
 Postman:
+
 - Import `docs/BrieflyAI.postman_collection.json`
-- (Optional) Import `docs/BrieflyAI.postman_environment.json`
+- Import `docs/BrieflyAI.postman_environment.json`
 - Select the “BrieflyAI Local” environment and send the request.
 
 Quick curl:
+
 ```bash
 curl -s -X POST http://localhost:8080/api/process \
   -H "Content-Type: application/json" \
