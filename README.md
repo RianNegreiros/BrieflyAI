@@ -30,9 +30,7 @@ BrieflyAI is a Chrome Extension with a Spring Boot backend that summarizes selec
 
 ## Server Setup (Spring Boot)
 
-1. Set your Gemini API key as an environment variable:
-   - Linux/macOS: `export GEMINI_KEY=your_key_here`
-   - Windows (PowerShell): `$Env:GEMINI_KEY="your_key_here"`
+1. Server reads `GEMINI_MODEL` from the environment; see `server/src/main/resources/application.properties`.
 2. From `server/`, run the service:
    - `./mvnw spring-boot:run`
 3. The API will be available at `http://localhost:8080/api/process`.
