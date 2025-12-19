@@ -2,6 +2,9 @@ package com.brieflyai.BrieflyAI.controller;
 
 import com.brieflyai.BrieflyAI.model.dto.ResearchRequest;
 import com.brieflyai.BrieflyAI.service.ResearchService;
+
+import jakarta.validation.Valid;
+
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
@@ -17,7 +20,8 @@ public class ResearchController {
     }
 
     @PostMapping("/process")
-    public ResponseEntity<String> processContent(@RequestBody ResearchRequest researchRequest) {
+    public ResponseEntity<String> processContent(
+            @Valid @RequestBody ResearchRequest researchRequest) {
         String result = researchService.processContent(researchRequest);
         return ResponseEntity.ok(result);
     }
