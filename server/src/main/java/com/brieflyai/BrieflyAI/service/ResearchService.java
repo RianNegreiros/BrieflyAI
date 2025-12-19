@@ -1,19 +1,16 @@
 package com.brieflyai.BrieflyAI.service;
 
 import com.brieflyai.BrieflyAI.exception.ResearchServiceException;
+import com.brieflyai.BrieflyAI.model.dto.ResearchRequest;
 import com.brieflyai.BrieflyAI.model.enums.ResearchOperation;
 import com.google.genai.Client;
 import com.google.genai.types.GenerateContentConfig;
 import com.google.genai.types.GenerateContentResponse;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.cache.annotation.Cacheable;
 import org.springframework.stereotype.Service;
-import org.springframework.util.StringUtils;
-
-import com.brieflyai.BrieflyAI.model.dto.ResearchRequest;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import org.slf4j.MDC;
 
 import java.time.Duration;
 import java.time.Instant;
@@ -34,84 +31,68 @@ public class ResearchService {
 
     @Cacheable(value = "research", key = "#researchRequest.operation + ':' + #researchRequest.content.hashCode()")
     public String processContent(ResearchRequest researchRequest) {
+        Instant startTime = Instant.now();
+
+        logger.info("Processing request - operation: {}, contentLength: {}",
+                researchRequest.operation(),
+                researchRequest.content().length());
+
         try {
-            logger.info("Starting request processing: operation={}, contentLength={}", researchRequest.operation(),
-                    researchRequest.content().length());
-
-            Instant startTime = Instant.now();
-
-            validateRequest(researchRequest);
             String prompt = buildPrompt(researchRequest);
 
-            Client client = Client.builder().apiKey(researchRequest.apiKey()).build();
-            GenerateContentResponse response = client.models.generateContent(geminiModel, prompt, config);
+            Client client = Client.builder()
+                    .apiKey(researchRequest.apiKey())
+                    .build();
+
+            GenerateContentResponse response = client.models.generateContent(
+                    geminiModel,
+                    prompt,
+                    config);
 
             Duration processingTime = Duration.between(startTime, Instant.now());
 
-            logCompressionForSummarizeOperation(researchRequest, response.text());
+            logger.info("Request completed - operation: {}, processingTime: {}ms, responseLength: {}",
+                    researchRequest.operation(),
+                    processingTime.toMillis(),
+                    response.text().length());
 
-            logger.info("Request completed successfully in {}ms, responseLength={}",
-                    processingTime.toMillis(), response.text().length());
+            logCompressionMetrics(researchRequest, response.text());
 
             return response.text();
 
-        } catch (IllegalArgumentException e) {
-            logger.warn("Invalid request: {}", e.getMessage());
-            throw e;
-        } catch (ResearchServiceException e) {
-            logger.error("Service error for request {}", e.getMessage());
-            throw e;
         } catch (Exception e) {
-            logger.error("Unexpected error processing request {}", e.getMessage(), e);
-            throw new ResearchServiceException("Internal service error occurred", e);
-        } finally {
-            MDC.clear();
+            logger.error("Error processing request - operation: {}, error: {}",
+                    researchRequest.operation(),
+                    e.getMessage(),
+                    e);
+            throw new ResearchServiceException("Failed to process content", e);
         }
-    }
-
-    private void validateRequest(ResearchRequest researchRequest) {
-        if (researchRequest == null) {
-            throw new IllegalArgumentException("Request cannot be null");
-        }
-
-        if (!StringUtils.hasText(researchRequest.operation())) {
-            throw new IllegalArgumentException("Operation is required");
-        }
-
-        if (!StringUtils.hasText(researchRequest.content())) {
-            throw new IllegalArgumentException("Content is required");
-        }
-
-        if (!StringUtils.hasText(researchRequest.apiKey())) {
-            throw new IllegalArgumentException("API key is required");
-        }
-
-        logger.debug("Request validation passed");
     }
 
     private String buildPrompt(ResearchRequest researchRequest) {
         try {
-            ResearchOperation operation = ResearchOperation.fromString(researchRequest.operation());
-            String prompt = operation.getPromptTemplate() + "\n\n" + researchRequest.content();
-            logger.debug("Built prompt for operation '{}', total length: {}",
-                    researchRequest.operation(), prompt.length());
-            return prompt;
+            ResearchOperation operation = ResearchOperation.fromString(
+                    researchRequest.operation());
+            return operation.getPromptTemplate() + "\n\n" + researchRequest.content();
         } catch (IllegalArgumentException e) {
-            logger.error("Invalid operation '{}': {}", researchRequest.operation(), e.getMessage());
+            logger.error("Invalid operation: {}", researchRequest.operation());
             throw new ResearchServiceException("Unsupported operation: " + researchRequest.operation(), e);
         }
     }
 
-    private void logCompressionForSummarizeOperation(ResearchRequest request, String response) {
-        if (ResearchOperation.SUMMARIZE.getOperation().equalsIgnoreCase(request.operation())) {
+    private void logCompressionMetrics(ResearchRequest request, String response) {
+        if ("summarize".equalsIgnoreCase(request.operation())) {
             int originalLength = request.content().length();
             int summaryLength = response.length();
             double compressionRatio = (double) summaryLength / originalLength;
             double reductionPercentage = (1 - compressionRatio) * 100;
-            logger.info(
-                    "Compression: originalLength={}, summaryLength={}, compressionRatio={}, reductionPercentage={}%",
-                    originalLength, summaryLength, String.format("%.2f", compressionRatio),
-                    String.format("%.2f", reductionPercentage));
+
+            logger.info("Compression metrics - originalLength: {}, summaryLength: {}, " +
+                    "compressionRatio: {:.2f}, reduction: {:.2f}%",
+                    originalLength,
+                    summaryLength,
+                    compressionRatio,
+                    reductionPercentage);
         }
     }
 }
