@@ -9,7 +9,7 @@ import org.springframework.context.annotation.Configuration;
 public class GeminiConfig {
 
     @Bean
-    public GenerateContentConfig generateContentConfig() {
+    GenerateContentConfig generateContentConfig() {
         // Disable thiking for faster response
         return GenerateContentConfig.builder()
                 .thinkingConfig(ThinkingConfig.builder().thinkingBudget(0).build())

@@ -35,15 +35,15 @@ public class ResearchService {
     @Cacheable(value = "research", key = "#researchRequest.operation + ':' + #researchRequest.content.hashCode()")
     public String processContent(ResearchRequest researchRequest) {
         try {
-            logger.info("Starting request processing: operation={}, contentLength={}", researchRequest.getOperation(),
-                    researchRequest.getContent().length());
+            logger.info("Starting request processing: operation={}, contentLength={}", researchRequest.operation(),
+                    researchRequest.content().length());
 
             Instant startTime = Instant.now();
 
             validateRequest(researchRequest);
             String prompt = buildPrompt(researchRequest);
 
-            Client client = Client.builder().apiKey(researchRequest.getApiKey()).build();
+            Client client = Client.builder().apiKey(researchRequest.apiKey()).build();
             GenerateContentResponse response = client.models.generateContent(geminiModel, prompt, config);
 
             Duration processingTime = Duration.between(startTime, Instant.now());
@@ -74,15 +74,15 @@ public class ResearchService {
             throw new IllegalArgumentException("Request cannot be null");
         }
 
-        if (!StringUtils.hasText(researchRequest.getOperation())) {
+        if (!StringUtils.hasText(researchRequest.operation())) {
             throw new IllegalArgumentException("Operation is required");
         }
 
-        if (!StringUtils.hasText(researchRequest.getContent())) {
+        if (!StringUtils.hasText(researchRequest.content())) {
             throw new IllegalArgumentException("Content is required");
         }
 
-        if (!StringUtils.hasText(researchRequest.getApiKey())) {
+        if (!StringUtils.hasText(researchRequest.apiKey())) {
             throw new IllegalArgumentException("API key is required");
         }
 
@@ -91,20 +91,20 @@ public class ResearchService {
 
     private String buildPrompt(ResearchRequest researchRequest) {
         try {
-            ResearchOperation operation = ResearchOperation.fromString(researchRequest.getOperation());
-            String prompt = operation.getPromptTemplate() + "\n\n" + researchRequest.getContent();
+            ResearchOperation operation = ResearchOperation.fromString(researchRequest.operation());
+            String prompt = operation.getPromptTemplate() + "\n\n" + researchRequest.content();
             logger.debug("Built prompt for operation '{}', total length: {}",
-                    researchRequest.getOperation(), prompt.length());
+                    researchRequest.operation(), prompt.length());
             return prompt;
         } catch (IllegalArgumentException e) {
-            logger.error("Invalid operation '{}': {}", researchRequest.getOperation(), e.getMessage());
-            throw new ResearchServiceException("Unsupported operation: " + researchRequest.getOperation(), e);
+            logger.error("Invalid operation '{}': {}", researchRequest.operation(), e.getMessage());
+            throw new ResearchServiceException("Unsupported operation: " + researchRequest.operation(), e);
         }
     }
 
     private void logCompressionForSummarizeOperation(ResearchRequest request, String response) {
-        if (ResearchOperation.SUMMARIZE.getOperation().equalsIgnoreCase(request.getOperation())) {
-            int originalLength = request.getContent().length();
+        if (ResearchOperation.SUMMARIZE.getOperation().equalsIgnoreCase(request.operation())) {
+            int originalLength = request.content().length();
             int summaryLength = response.length();
             double compressionRatio = (double) summaryLength / originalLength;
             double reductionPercentage = (1 - compressionRatio) * 100;
