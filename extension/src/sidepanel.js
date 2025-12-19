@@ -8,6 +8,7 @@ document.addEventListener("DOMContentLoaded", () => {
   document
     .getElementById("summarizeBtn")
     .addEventListener("click", summarizeText);
+  document.getElementById("suggestBtn").addEventListener("click", suggestText);
   document.getElementById("saveKeyBtn").addEventListener("click", saveApiKey);
 });
 
@@ -68,6 +69,52 @@ async function summarizeText() {
   }
 }
 
+async function suggestText() {
+  try {
+    const { geminiApiKey } = await chrome.storage.local.get(["geminiApiKey"]);
+
+    if (!geminiApiKey) {
+      showResult("Please enter your Gemini API key first");
+      return;
+    }
+
+    const [tab] = await chrome.tabs.query({
+      active: true,
+      currentWindow: true,
+    });
+    const [{ result }] = await chrome.scripting.executeScript({
+      target: { tabId: tab.id },
+      function: () => window.getSelection().toString(),
+    });
+
+    if (!result) {
+      showResult("Select some text first");
+      return;
+    }
+
+    showSpinner();
+
+    const response = await fetch("http://localhost:8080/api/process", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        content: result,
+        operation: "suggest",
+        apiKey: geminiApiKey,
+      }),
+    });
+
+    if (!response.ok) {
+      throw new Error(`Failed to get suggestions: ${response.status}`);
+    }
+
+    const text = await response.text();
+    showResult(formatMarkdown(escapeHtml(text)));
+  } catch (error) {
+    showResult("Error getting suggestions: " + escapeHtml(error.message));
+  }
+}
+
 function showResult(content) {
   document.getElementById("results").innerHTML =
     `<div class='result-item'><div class='result-content'>${content}</div></div>`;
@@ -90,7 +137,6 @@ function formatMarkdown(text) {
     .replace(/\n/g, "<br>");
 }
 
-// Simple HTML escape utility
 function escapeHtml(text) {
   const map = {
     "&": "&amp;",
