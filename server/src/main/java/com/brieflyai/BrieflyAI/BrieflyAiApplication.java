@@ -8,8 +8,8 @@ import org.springframework.cache.annotation.EnableCaching;
 @EnableCaching
 public class BrieflyAiApplication {
 
-	public static void main(String[] args) {
-		SpringApplication.run(BrieflyAiApplication.class, args);
-	}
+    public static void main(String[] args) {
+        SpringApplication.run(BrieflyAiApplication.class, args);
+    }
 
 }
