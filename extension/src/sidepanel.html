@@ -1,34 +1,46 @@
 <!doctype html>
 <html lang="en">
   <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>BrieflyAI</title>
     <link rel="stylesheet" href="sidepanel.css" />
   </head>
-
   <body>
-    <div class="container">
-      <div class="header">
-        <h2>BrieflyAI</h2>
-      </div>
+    <div class="app">
+      <header>
+        <h1>BrieflyAI</h1>
+      </header>
 
-      <div class="api-key">
-        <h3>API Key</h3>
-        <input
-          type="password"
-          id="apiKey"
-          placeholder="Enter your Gemini API key"
-        />
-        <button id="saveKeyBtn">Save Key</button>
-      </div>
+      <main>
+        <section class="card">
+          <label for="apiKey">API Key</label>
+          <div class="input-group">
+            <input
+              type="password"
+              id="apiKey"
+              placeholder="Enter Gemini API key"
+              aria-label="Gemini API Key"
+            />
+            <button id="saveKeyBtn">Save</button>
+          </div>
+        </section>
 
-      <div class="actions">
-        <button id="summarizeBtn">Summarize</button>
-        <button id="suggestBtn">Suggest</button>
-      </div>
+        <section class="card">
+          <button id="summarizeBtn" class="btn-primary">Summarize</button>
+          <button id="suggestBtn" class="btn-secondary">Suggest</button>
+        </section>
 
-      <div id="results"></div>
+        <div id="results"></div>
+
+        <button id="saveNoteBtn" class="btn-success" hidden>Save Note</button>
+
+        <section class="card notes">
+          <h2>My Notes</h2>
+          <div id="myNotes"></div>
+        </section>
+      </main>
     </div>
-
     <script src="sidepanel.js"></script>
   </body>
 </html>
