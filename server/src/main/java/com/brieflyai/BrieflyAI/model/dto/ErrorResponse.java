@@ -1,14 +1,18 @@
 package com.brieflyai.BrieflyAI.model.dto;
 
-public class ErrorResponse {
-    private final String message;
-    private final int status;
+import java.time.LocalDateTime;
+import java.util.Map;
 
-    public ErrorResponse(String message, int status) {
-        this.message = message;
-        this.status = status;
+public record ErrorResponse(
+        LocalDateTime timestamp,
+        int status,
+        String message,
+        Map<String, String> errors) {
+    public ErrorResponse(int status, String message) {
+        this(LocalDateTime.now(), status, message, null);
     }
 
-    public String getMessage() { return message; }
-    public int getStatus() { return status; }
+    public ErrorResponse(int status, String message, Map<String, String> errors) {
+        this(LocalDateTime.now(), status, message, errors);
+    }
 }
