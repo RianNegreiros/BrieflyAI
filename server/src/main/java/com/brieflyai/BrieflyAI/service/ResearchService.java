@@ -1,5 +1,6 @@
 package com.brieflyai.BrieflyAI.service;
 
+import com.brieflyai.BrieflyAI.exception.ApiKeyException;
 import com.brieflyai.BrieflyAI.exception.ResearchServiceException;
 import com.brieflyai.BrieflyAI.model.dto.ResearchRequest;
 import com.brieflyai.BrieflyAI.model.enums.ResearchOperation;
@@ -49,6 +50,10 @@ public class ResearchService {
                     prompt,
                     config);
 
+            if (response == null || response.text() == null || response.text().isEmpty()) {
+                throw new ResearchServiceException("Empty response from AI service");
+            }
+
             Duration processingTime = Duration.between(startTime, Instant.now());
 
             logger.info("Request completed - operation: {}, processingTime: {}ms, responseLength: {}",
@@ -60,16 +65,22 @@ public class ResearchService {
 
             return response.text();
 
+        } catch (SecurityException e) {
+            logger.error("API key authentication failed: {}", e.getMessage());
+            throw new ApiKeyException("Invalid or expired API key", e);
+        } catch (IllegalArgumentException e) {
+            logger.error("Invalid request parameters: {}", e.getMessage());
+            throw e;
         } catch (Exception e) {
             logger.error("Error processing request - operation: {}, error: {}",
                     researchRequest.operation(),
                     e.getMessage(),
                     e);
-            throw new ResearchServiceException("Failed to process content", e);
+            throw new ResearchServiceException("Failed to process content: " + e.getMessage(), e);
         }
     }
 
-    private String buildPrompt(ResearchRequest researchRequest) {
+    String buildPrompt(ResearchRequest researchRequest) {
         try {
             ResearchOperation operation = ResearchOperation.fromString(
                     researchRequest.operation());
