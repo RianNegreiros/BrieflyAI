@@ -1,16 +1,21 @@
-FROM ubuntu:latest AS build
+# Multi-stage build
+FROM maven:3.9-eclipse-temurin-21 AS build
 
-RUN apt-get update
-RUN apt-get install openjdk-21-jdk -y
-COPY . .
+WORKDIR /app
 
-RUN apt-get install maven -y
-RUN mvn clean install
+COPY pom.xml .
+RUN mvn dependency:go-offline
 
-FROM eclipse-temurin:21-alpine
+COPY src ./src
+RUN mvn clean package -DskipTests
+
+FROM eclipse-temurin:21-jre-alpine
 
 EXPOSE 8080
 
-COPY --from=build /target/BrieflyAI-0.0.1-SNAPSHOT.jar app.jar
+RUN addgroup -S spring && adduser -S spring -G spring
+USER spring:spring
 
-ENTRYPOINT [ "java", "-jar", "app.jar" ]
+COPY --from=build /app/target/BrieflyAI-0.0.1-SNAPSHOT.jar app.jar
+
+ENTRYPOINT ["java", "-jar", "app.jar"]
