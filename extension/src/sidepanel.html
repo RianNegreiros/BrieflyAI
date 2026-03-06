@@ -4,47 +4,88 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>BrieflyAI</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display:ital@0;1&family=DM+Mono:wght@400;500&family=Outfit:wght@300;400;500;600&display=swap" rel="stylesheet" />
     <link rel="stylesheet" href="sidepanel.css" />
   </head>
   <body>
     <div class="app">
-      <header>
-        <h1>BrieflyAI</h1>
+
+      <header class="header">
+        <div class="header-inner">
+          <div class="logo">
+            <span class="logo-mark">B</span>
+            <span class="logo-text">Briefly<em>AI</em></span>
+          </div>
+          <button class="settings-toggle" id="settingsToggle" aria-label="API Key">
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <circle cx="7.5" cy="15.5" r="5.5"/>
+              <path d="M21 2l-9.6 9.6M15.5 7.5l2 2M18 5l2 2"/>
+            </svg>
+          </button>
+        </div>
       </header>
 
-      <main>
-        <section class="card">
-          <label for="apiKey">API Key</label>
-          <div class="input-group">
+      <div class="settings-drawer" id="settingsDrawer">
+        <div class="settings-inner">
+          <label class="field-label" for="apiKey">Gemini API Key</label>
+          <div class="input-row">
             <input
               type="password"
               id="apiKey"
-              placeholder="Enter Gemini API key"
+              placeholder="AIza••••••••••••••••"
               aria-label="Gemini API Key"
+              autocomplete="off"
+              spellcheck="false"
             />
-            <button id="saveKeyBtn">Save</button>
+            <button id="saveKeyBtn" class="btn-save">Save</button>
+          </div>
+          <p class="field-hint">Stored locally, never shared.</p>
+        </div>
+      </div>
+
+      <main class="main">
+
+        <section class="action-section">
+          <p class="action-hint">Select text on any page, then choose an action below.</p>
+          <div class="action-buttons">
+            <button id="summarizeBtn" class="btn-action btn-action--primary">
+              <svg class="btn-icon" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                <line x1="21" y1="6" x2="3" y2="6"/><line x1="15" y1="12" x2="3" y2="12"/><line x1="17" y1="18" x2="3" y2="18"/>
+              </svg>
+              Summarize
+            </button>
+            <button id="suggestBtn" class="btn-action btn-action--secondary">
+              <svg class="btn-icon" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                <polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/>
+              </svg>
+              Suggest
+            </button>
           </div>
         </section>
 
-        <section class="card">
-          <button id="summarizeBtn" class="btn-primary">Summarize</button>
-          <button id="suggestBtn" class="btn-secondary">Suggest</button>
-        </section>
+        <div id="results" class="results-area" aria-live="polite"></div>
 
-        <div id="results"></div>
+        <button id="saveNoteBtn" class="btn-save-note" hidden>
+          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"/>
+            <polyline points="17 21 17 13 7 13 7 21"/><polyline points="7 3 7 8 15 8"/>
+          </svg>
+          Save to Notes
+        </button>
 
-        <button id="saveNoteBtn" class="btn-success" hidden>Save Note</button>
-
-        <section class="card notes">
-          <div class="notes-header">
-            <h2>My Notes</h2>
-            <div class="notes-actions">
-              <button id="exportBtn" class="btn-small">Export</button>
-              <button id="importBtn" class="btn-small">Import</button>
+        <section class="notes-section">
+          <div class="section-header">
+            <h2 class="section-title">Notes</h2>
+            <div class="section-actions">
+              <button id="exportBtn" class="btn-ghost">Export</button>
+              <button id="importBtn" class="btn-ghost">Import</button>
             </div>
           </div>
-          <div id="myNotes"></div>
+          <div id="myNotes" class="notes-list"></div>
         </section>
+
       </main>
     </div>
     <script src="sidepanel.js"></script>

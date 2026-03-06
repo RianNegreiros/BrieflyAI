@@ -1,4 +1,3 @@
-// Constants
 const STORAGE_KEYS = {
   API_KEY: "geminiApiKey",
   NOTES: "notes",
@@ -7,19 +6,19 @@ const STORAGE_KEYS = {
 const API_ENDPOINT = "http://localhost:8080/api/process";
 
 const ELEMENTS = {
-  apiKey: () => document.getElementById("apiKey"),
-  saveKeyBtn: () => document.getElementById("saveKeyBtn"),
-  summarizeBtn: () => document.getElementById("summarizeBtn"),
-  suggestBtn: () => document.getElementById("suggestBtn"),
-  results: () => document.getElementById("results"),
-  saveNoteBtn: () => document.getElementById("saveNoteBtn"),
-  myNotes: () => document.getElementById("myNotes"),
+  apiKey:        () => document.getElementById("apiKey"),
+  saveKeyBtn:    () => document.getElementById("saveKeyBtn"),
+  summarizeBtn:  () => document.getElementById("summarizeBtn"),
+  suggestBtn:    () => document.getElementById("suggestBtn"),
+  results:       () => document.getElementById("results"),
+  saveNoteBtn:   () => document.getElementById("saveNoteBtn"),
+  myNotes:       () => document.getElementById("myNotes"),
+  settingsToggle:() => document.getElementById("settingsToggle"),
+  settingsDrawer:() => document.getElementById("settingsDrawer"),
 };
 
-// State
 let lastProcessedContent = null;
 
-// Initialize
 document.addEventListener("DOMContentLoaded", initializeApp);
 
 async function initializeApp() {
@@ -28,11 +27,8 @@ async function initializeApp() {
   displayNotes();
 }
 
-// API Key Management
 async function loadApiKey() {
-  const { [STORAGE_KEYS.API_KEY]: apiKey } = await chrome.storage.local.get(
-    STORAGE_KEYS.API_KEY,
-  );
+  const { [STORAGE_KEYS.API_KEY]: apiKey } = await chrome.storage.local.get(STORAGE_KEYS.API_KEY);
   if (apiKey) {
     ELEMENTS.apiKey().value = apiKey;
   }
@@ -43,15 +39,26 @@ async function saveApiKey() {
   if (!apiKey) return;
 
   await chrome.storage.local.set({ [STORAGE_KEYS.API_KEY]: apiKey });
-  console.log("API key saved successfully");
+
+  const btn = ELEMENTS.saveKeyBtn();
+  const prev = btn.textContent;
+  btn.textContent = "Saved ✓";
+  setTimeout(() => { btn.textContent = prev; }, 1500);
 }
 
-// Event Listeners
+function toggleSettings() {
+  const drawer  = ELEMENTS.settingsDrawer();
+  const toggle  = ELEMENTS.settingsToggle();
+  const isOpen  = drawer.classList.contains("is-open");
+
+  drawer.classList.toggle("is-open", !isOpen);
+  toggle.classList.toggle("is-active", !isOpen);
+}
+
 function setupEventListeners() {
   ELEMENTS.saveKeyBtn().addEventListener("click", saveApiKey);
-  ELEMENTS.summarizeBtn().addEventListener("click", () =>
-    processText("summarize"),
-  );
+  ELEMENTS.settingsToggle().addEventListener("click", toggleSettings);
+  ELEMENTS.summarizeBtn().addEventListener("click", () => processText("summarize"));
   ELEMENTS.suggestBtn().addEventListener("click", () => processText("suggest"));
   document.getElementById("exportBtn").addEventListener("click", exportNotes);
   document.getElementById("importBtn").addEventListener("click", importNotes);
@@ -63,7 +70,6 @@ function setupEventListeners() {
   });
 }
 
-// Text Processing
 async function getSelectedText() {
   const [tab] = await chrome.tabs.query({ active: true, currentWindow: true });
   const [{ result }] = await chrome.scripting.executeScript({
@@ -79,23 +85,19 @@ async function processText(operation) {
   try {
     toggleButtons(buttons, true);
 
-    const { [STORAGE_KEYS.API_KEY]: apiKey } = await chrome.storage.local.get(
-      STORAGE_KEYS.API_KEY,
-    );
+    const { [STORAGE_KEYS.API_KEY]: apiKey } = await chrome.storage.local.get(STORAGE_KEYS.API_KEY);
     if (!apiKey) {
-      showMessage("Please enter your Gemini API key first", "error");
+      showMessage("Enter your Gemini API key first — click the ⚙ icon above.", "error");
       return;
     }
 
     const selectedText = await getSelectedText();
     if (!selectedText?.trim()) {
-      showMessage("Select some text first", "warning");
+      showMessage("Select some text on the page first, then try again.", "warning");
       return;
     }
 
-    showSpinner(
-      `${operation === "summarize" ? "Summarizing" : "Generating suggestions"}...`,
-    );
+    showSpinner(operation === "summarize" ? "Summarizing…" : "Generating suggestions…");
 
     const response = await fetch(API_ENDPOINT, {
       method: "POST",
@@ -104,66 +106,48 @@ async function processText(operation) {
     });
 
     if (!response.ok) {
-      throw new Error(`Failed to ${operation} text: ${response.status}`);
+      throw new Error(`Server returned ${response.status}`);
     }
 
     const result = await response.text();
     showResult(result, selectedText, operation);
   } catch (error) {
-    showMessage(`Error ${operation}ing text: ${error.message}`, "error");
+    showMessage(`Something went wrong: ${error.message}`, "error");
   } finally {
     toggleButtons(buttons, false);
   }
 }
 
-// UI Helpers
 function toggleButtons(buttons, disabled) {
   buttons.forEach((btn) => (btn.disabled = disabled));
 }
 
 function showSpinner(message) {
   ELEMENTS.results().innerHTML = `
-    <div class="spinner-container">
+    <div class="spinner-wrap">
       <div class="spinner"></div>
-      <p class="spinner-text">${message}</p>
+      <span class="spinner-label">${message}</span>
     </div>`;
   ELEMENTS.saveNoteBtn().hidden = true;
 }
 
 function showMessage(content, type = "success") {
-  const messageClass =
-    {
-      error: "error-message",
-      warning: "warning-message",
-      success: "success-message",
-    }[type] || "result-item";
-
-  ELEMENTS.results().innerHTML = `
-    <div class="${messageClass}">
-      <div class="result-content">${escapeHtml(content)}</div>
-    </div>`;
+  const cls = { error: "msg--error", warning: "msg--warning", success: "msg--success" }[type] || "msg--success";
+  ELEMENTS.results().innerHTML = `<div class="msg ${cls}">${escapeHtml(content)}</div>`;
   ELEMENTS.saveNoteBtn().hidden = true;
 }
 
 function showResult(content, originalText, operation) {
   const formatted = formatMarkdown(escapeHtml(content));
-  ELEMENTS.results().innerHTML = `
-    <div class="result-item">
-      <div class="result-content">${formatted}</div>
-    </div>`;
+  ELEMENTS.results().innerHTML = `<div class="result-card">${formatted}</div>`;
 
-  lastProcessedContent = {
-    content: formatted,
-    original: originalText,
-    operation,
-  };
+  lastProcessedContent = { content: formatted, original: originalText, operation };
 
   const saveBtn = ELEMENTS.saveNoteBtn();
   saveBtn.hidden = false;
   saveBtn.onclick = () => saveNote();
 }
 
-// Formatting
 function formatMarkdown(text) {
   return text
     .replace(/\*\*(.*?)\*\*/g, "<strong>$1</strong>")
@@ -174,99 +158,74 @@ function formatMarkdown(text) {
     .replace(/^# (.*$)/gm, "<h1>$1</h1>")
     .replace(/^- (.*$)/gm, "<li>$1</li>")
     .replace(/(<li>.*<\/li>)/s, "<ul>$1</ul>")
-    .replace(/\n\n/g, "</p><p>") // Double newlines = paragraphs
-    .replace(/\n/g, " "); // Single newlines = spaces
+    .replace(/\n\n/g, "</p><p>")
+    .replace(/\n/g, " ");
 }
 
 function escapeHtml(text) {
-  const escapeMap = {
-    "&": "&amp;",
-    "<": "&lt;",
-    ">": "&gt;",
-    '"': "&quot;",
-    "'": "&#039;",
-  };
-  return text.replace(/[&<>"']/g, (m) => escapeMap[m]);
+  const m = { "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#039;" };
+  return text.replace(/[&<>"']/g, (c) => m[c]);
 }
 
-// Notes Management
 async function saveNote() {
   if (!lastProcessedContent) return;
 
   try {
-    const { [STORAGE_KEYS.NOTES]: notes = [] } = await chrome.storage.local.get(
-      STORAGE_KEYS.NOTES,
-    );
+    const { [STORAGE_KEYS.NOTES]: notes = [] } = await chrome.storage.local.get(STORAGE_KEYS.NOTES);
 
-    const newNote = {
+    notes.push({
       id: Date.now(),
       timestamp: new Date().toLocaleString(),
       original: lastProcessedContent.original,
       summary: lastProcessedContent.content,
       type: lastProcessedContent.operation,
-    };
+    });
 
-    notes.push(newNote);
     await chrome.storage.local.set({ [STORAGE_KEYS.NOTES]: notes });
-
-    showMessage("Note saved successfully!", "success");
+    showMessage("Note saved.", "success");
     ELEMENTS.saveNoteBtn().hidden = true;
-
-    setTimeout(() => (ELEMENTS.results().innerHTML = ""), 2000);
+    setTimeout(() => { ELEMENTS.results().innerHTML = ""; }, 1800);
   } catch (error) {
-    console.error("Error saving note:", error);
-    showMessage("Failed to save note", "error");
+    showMessage("Failed to save note.", "error");
   }
 }
 
 async function displayNotes() {
-  const notesContainer = ELEMENTS.myNotes();
-  if (!notesContainer) return;
+  const container = ELEMENTS.myNotes();
+  if (!container) return;
 
-  const { [STORAGE_KEYS.NOTES]: notes = [] } = await chrome.storage.local.get(
-    STORAGE_KEYS.NOTES,
-  );
+  const { [STORAGE_KEYS.NOTES]: notes = [] } = await chrome.storage.local.get(STORAGE_KEYS.NOTES);
 
   if (notes.length === 0) {
-    notesContainer.innerHTML = "<p>No notes saved yet.</p>";
+    container.innerHTML = "";
     return;
   }
 
-  const sortedNotes = [...notes].sort((a, b) => b.id - a.id);
+  const sorted = [...notes].sort((a, b) => b.id - a.id);
   const fragment = document.createDocumentFragment();
+  sorted.forEach((note) => fragment.appendChild(createNoteElement(note)));
 
-  sortedNotes.forEach((note) => {
-    const noteElement = createNoteElement(note);
-    fragment.appendChild(noteElement);
-  });
+  container.innerHTML = "";
+  container.appendChild(fragment);
 
-  notesContainer.innerHTML = "";
-  notesContainer.appendChild(fragment);
-
-  // Attach delete handlers
-  notesContainer.querySelectorAll(".note-delete").forEach((btn) => {
-    btn.addEventListener("click", (e) =>
-      deleteNote(parseInt(e.target.dataset.id)),
-    );
+  container.querySelectorAll(".note-delete").forEach((btn) => {
+    btn.addEventListener("click", (e) => deleteNote(parseInt(e.currentTarget.dataset.id)));
   });
 }
 
 function createNoteElement(note) {
-  const typeLabel = note.type === "suggest" ? "Suggestion" : "Summary";
-
+  const label = note.type === "suggest" ? "Suggest" : "Summary";
   const div = document.createElement("div");
   div.className = "note";
   div.dataset.type = note.type;
   div.innerHTML = `
-    <div class="note-header">
-      <div class="note-meta">
-        <span class="note-badge">${typeLabel}</span>
-        <span class="note-time">${note.timestamp}</span>
-      </div>
-      <button class="note-delete" data-id="${note.id}">Delete</button>
+    <div class="note-top">
+      <span class="note-badge">${label}</span>
+      <span class="note-time">${note.timestamp}</span>
+      <button class="note-delete" data-id="${note.id}" aria-label="Delete note">×</button>
     </div>
     <details>
-      <summary>${typeLabel}</summary>
+      <summary>View ${label.toLowerCase()}</summary>
       <div class="note-content">${note.summary}</div>
     </details>`;
   return div;
@@ -274,69 +233,47 @@ function createNoteElement(note) {
 
 async function deleteNote(noteId) {
   try {
-    const { [STORAGE_KEYS.NOTES]: notes = [] } = await chrome.storage.local.get(
-      STORAGE_KEYS.NOTES,
-    );
-    const filteredNotes = notes.filter((note) => note.id !== noteId);
-    await chrome.storage.local.set({ [STORAGE_KEYS.NOTES]: filteredNotes });
+    const { [STORAGE_KEYS.NOTES]: notes = [] } = await chrome.storage.local.get(STORAGE_KEYS.NOTES);
+    await chrome.storage.local.set({ [STORAGE_KEYS.NOTES]: notes.filter((n) => n.id !== noteId) });
   } catch (error) {
     console.error("Error deleting note:", error);
   }
 }
 
-// Import/Export
 async function exportNotes() {
   try {
-    const { [STORAGE_KEYS.NOTES]: notes = [] } = await chrome.storage.local.get(
-      STORAGE_KEYS.NOTES,
-    );
-    
-    if (notes.length === 0) {
-      showMessage("No notes to export", "warning");
-      return;
-    }
+    const { [STORAGE_KEYS.NOTES]: notes = [] } = await chrome.storage.local.get(STORAGE_KEYS.NOTES);
+    if (notes.length === 0) { showMessage("No notes to export.", "warning"); return; }
 
-    const data = JSON.stringify(notes, null, 2);
-    const blob = new Blob([data], { type: "application/json" });
-    const url = URL.createObjectURL(blob);
-    const a = document.createElement("a");
+    const blob = new Blob([JSON.stringify(notes, null, 2)], { type: "application/json" });
+    const url  = URL.createObjectURL(blob);
+    const a    = document.createElement("a");
     a.href = url;
     a.download = `brieflyai-notes-${Date.now()}.json`;
     a.click();
     URL.revokeObjectURL(url);
   } catch (error) {
-    console.error("Export error:", error);
-    showMessage("Failed to export notes", "error");
+    showMessage("Failed to export notes.", "error");
   }
 }
 
 function importNotes() {
-  const input = document.createElement("input");
-  input.type = "file";
-  input.accept = "application/json";
+  const input   = document.createElement("input");
+  input.type    = "file";
+  input.accept  = "application/json";
   input.onchange = async (e) => {
     try {
       const file = e.target.files[0];
       if (!file) return;
 
-      const text = await file.text();
-      const importedNotes = JSON.parse(text);
+      const imported = JSON.parse(await file.text());
+      if (!Array.isArray(imported)) throw new Error("Invalid format");
 
-      if (!Array.isArray(importedNotes)) {
-        throw new Error("Invalid format");
-      }
-
-      const { [STORAGE_KEYS.NOTES]: existingNotes = [] } = await chrome.storage.local.get(
-        STORAGE_KEYS.NOTES,
-      );
-
-      const merged = [...existingNotes, ...importedNotes];
-      await chrome.storage.local.set({ [STORAGE_KEYS.NOTES]: merged });
-      
-      showMessage(`Imported ${importedNotes.length} notes`, "success");
+      const { [STORAGE_KEYS.NOTES]: existing = [] } = await chrome.storage.local.get(STORAGE_KEYS.NOTES);
+      await chrome.storage.local.set({ [STORAGE_KEYS.NOTES]: [...existing, ...imported] });
+      showMessage(`Imported ${imported.length} note${imported.length !== 1 ? "s" : ""}.`, "success");
     } catch (error) {
-      console.error("Import error:", error);
-      showMessage("Failed to import notes", "error");
+      showMessage("Failed to import — check file format.", "error");
     }
   };
   input.click();
