@@ -454,6 +454,43 @@ button:disabled {
   background: transparent;
 }
 
+.notes-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 1.25rem;
+}
+
+.notes-header h2 {
+  margin-bottom: 0;
+}
+
+.notes-actions {
+  display: flex;
+  gap: 0.5rem;
+}
+
+.btn-small {
+  padding: 0.5rem 1rem;
+  font-size: 0.8125rem;
+  background: linear-gradient(
+    135deg,
+    rgba(100, 116, 139, 0.2) 0%,
+    rgba(71, 85, 105, 0.2) 100%
+  );
+  color: var(--text-secondary);
+  border: 1px solid var(--border);
+}
+
+.btn-small:hover:not(:disabled) {
+  background: linear-gradient(
+    135deg,
+    rgba(100, 116, 139, 0.3) 0%,
+    rgba(71, 85, 105, 0.3) 100%
+  );
+  border-color: rgba(99, 102, 241, 0.3);
+}
+
 #myNotes {
   display: grid;
   gap: 1rem;

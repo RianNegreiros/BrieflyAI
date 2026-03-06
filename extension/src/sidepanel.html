@@ -36,7 +36,13 @@
         <button id="saveNoteBtn" class="btn-success" hidden>Save Note</button>
 
         <section class="card notes">
-          <h2>My Notes</h2>
+          <div class="notes-header">
+            <h2>My Notes</h2>
+            <div class="notes-actions">
+              <button id="exportBtn" class="btn-small">Export</button>
+              <button id="importBtn" class="btn-small">Import</button>
+            </div>
+          </div>
           <div id="myNotes"></div>
         </section>
       </main>

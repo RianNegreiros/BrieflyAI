@@ -53,6 +53,8 @@ function setupEventListeners() {
     processText("summarize"),
   );
   ELEMENTS.suggestBtn().addEventListener("click", () => processText("suggest"));
+  document.getElementById("exportBtn").addEventListener("click", exportNotes);
+  document.getElementById("importBtn").addEventListener("click", importNotes);
 
   chrome.storage.onChanged.addListener((changes, namespace) => {
     if (namespace === "local" && changes[STORAGE_KEYS.NOTES]) {
@@ -280,4 +282,62 @@ async function deleteNote(noteId) {
   } catch (error) {
     console.error("Error deleting note:", error);
   }
+}
+
+// Import/Export
+async function exportNotes() {
+  try {
+    const { [STORAGE_KEYS.NOTES]: notes = [] } = await chrome.storage.local.get(
+      STORAGE_KEYS.NOTES,
+    );
+    
+    if (notes.length === 0) {
+      showMessage("No notes to export", "warning");
+      return;
+    }
+
+    const data = JSON.stringify(notes, null, 2);
+    const blob = new Blob([data], { type: "application/json" });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = `brieflyai-notes-${Date.now()}.json`;
+    a.click();
+    URL.revokeObjectURL(url);
+  } catch (error) {
+    console.error("Export error:", error);
+    showMessage("Failed to export notes", "error");
+  }
+}
+
+function importNotes() {
+  const input = document.createElement("input");
+  input.type = "file";
+  input.accept = "application/json";
+  input.onchange = async (e) => {
+    try {
+      const file = e.target.files[0];
+      if (!file) return;
+
+      const text = await file.text();
+      const importedNotes = JSON.parse(text);
+
+      if (!Array.isArray(importedNotes)) {
+        throw new Error("Invalid format");
+      }
+
+      const { [STORAGE_KEYS.NOTES]: existingNotes = [] } = await chrome.storage.local.get(
+        STORAGE_KEYS.NOTES,
+      );
+
+      const merged = [...existingNotes, ...importedNotes];
+      await chrome.storage.local.set({ [STORAGE_KEYS.NOTES]: merged });
+      
+      showMessage(`Imported ${importedNotes.length} notes`, "success");
+    } catch (error) {
+      console.error("Import error:", error);
+      showMessage("Failed to import notes", "error");
+    }
+  };
+  input.click();
 }
