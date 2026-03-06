@@ -2,6 +2,8 @@
 
 A Chrome Extension with Spring Boot backend that summarizes selected text using Google Gemini AI and stores notes locally.
 
+![Screenshot showing the extension in action](./_docs/app-preview.png)
+
 ## How It Works
 
 ```bash
@@ -13,6 +15,7 @@ Chrome Extension ←→ Spring Boot Backend ←→ Google Gemini API
 3. Backend sends text to Gemini API for processing
 4. Summary appears in the side panel
 5. Optionally save notes (stored locally in browser)
+6. Export and import notes (stored in JSON file)
 
 ## Project Structure
 
@@ -45,6 +48,13 @@ cd server/
 ./mvnw spring-boot:run
 ```
 
+####
+```bash
+cd server/
+docker build -t brieflyai .
+docker run -p 8080:8080 brieflyai
+```
+
 Backend runs at `http://localhost:8080`
 
 ### 2. Install Extension
@@ -58,7 +68,7 @@ Backend runs at `http://localhost:8080`
 
 1. Select text on any webpage
 2. Open BrieflyAI side panel
-3. Enter your Gemini API key when prompted
+3. Enter your Gemini API key
 4. Click "Summarize"
 
 ## API
